@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ProductCard from "../components/Fragments/ProductCard";
 import Button from "../components/Elements/Button";
 
@@ -21,6 +21,26 @@ const products = [
 
 const ProductPage = () => {
   const [cart, setCart] = useState([]);
+  const [totalPrice, setTotalPrice] = useState(0);
+  
+  // Penggunaan componentDidMount menggunakan stateless component
+  useEffect(() => {
+    setCart(JSON.parse(localStorage.getItem("cart")) || []);
+  }, [])
+
+  // Penggunaan componentDidUpdate menggunakan stateless component
+  useEffect(() => {
+    if(cart.length > 0) {
+      const sum = cart.reduce((acc, item) => {
+        const product = products.find((product) => product.id === item.id);
+        return acc + product.price * item.qty;
+      }, 0);
+  
+      setTotalPrice(sum);
+      localStorage.setItem("cart", JSON.stringify(cart));
+    }
+  }, [cart])
+
   const email = localStorage.getItem("email");
 
   const handleLogout = () => {
@@ -55,7 +75,11 @@ const ProductPage = () => {
         </Button>
       </div>
       <div className="flex justify-center mt-5">
-        <div className={`pl-5 ${cart.length > 0 ? 'w-4/6' : 'w-full justify-center'} flex gap-x-5 flex-wrap`}>
+        <div
+          className={`pl-5 ${
+            cart.length > 0 ? "w-4/6" : "w-full justify-center"
+          } flex gap-x-5 flex-wrap`}
+        >
           {products.map((product) => (
             <ProductCard key={product.id}>
               <ProductCard.Header img={product.img} />
@@ -105,6 +129,14 @@ const ProductPage = () => {
                     </tr>
                   );
                 })}
+                <tr>
+                  <td colSpan={3}>
+                    <b>Total Price</b>
+                  </td>
+                  <td>
+                    <b>{totalPrice.toLocaleString('id-ID', {style: 'currency', currency: 'IDR'})}</b>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
