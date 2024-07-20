@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ProductCard from "../components/Fragments/ProductCard";
 import Button from "../components/Elements/Button";
 
@@ -41,6 +41,17 @@ const ProductPage = () => {
     }
   }, [cart])
 
+  // Penggunaan useRef untuk menghilangkan total price dari useEffect jika tidak ada barang di cart
+  const totalPriceRef = useRef(null);
+
+  useEffect(() => {
+    if(cart.length > 0) {
+      totalPriceRef.current.style.display = 'table-row';
+    } else {
+      totalPriceRef.current.style.display = 'none';
+    }
+  });
+
   const email = localStorage.getItem("email");
 
   const handleLogout = () => {
@@ -76,9 +87,7 @@ const ProductPage = () => {
       </div>
       <div className="flex justify-center mt-5">
         <div
-          className={`pl-5 ${
-            cart.length > 0 ? "w-4/6" : "w-full justify-center"
-          } flex gap-x-5 flex-wrap`}
+          className="pl-5 w-4/6 flex flex-wrap gap-x-2"
         >
           {products.map((product) => (
             <ProductCard key={product.id}>
@@ -93,7 +102,6 @@ const ProductPage = () => {
             </ProductCard>
           ))}
         </div>
-        {cart.length > 0 && (
           <div className="w-2/6">
             <h1 className="text-black font-bold text-2xl">Keranjang</h1>
             <table>
@@ -129,7 +137,7 @@ const ProductPage = () => {
                     </tr>
                   );
                 })}
-                <tr>
+                <tr ref={totalPriceRef}>
                   <td colSpan={3}>
                     <b>Total Price</b>
                   </td>
@@ -140,7 +148,6 @@ const ProductPage = () => {
               </tbody>
             </table>
           </div>
-        )}
       </div>
     </>
   );
