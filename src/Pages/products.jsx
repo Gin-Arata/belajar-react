@@ -1,56 +1,48 @@
 import { useEffect, useRef, useState } from "react";
 import ProductCard from "../components/Fragments/ProductCard";
 import Button from "../components/Elements/Button";
-
-const products = [
-  {
-    id: 1,
-    img: "/images/Gurun.png",
-    title: "Padang Sahara",
-    price: 600000,
-    description: `Lorem, ipsum dolor sit amet consectetur adipisicing elit. Minima est ex quas, illum perspiciatis sunt cumque, totam quia reprehenderit, ratione voluptatum impedit doloribus. Eius laborum consequatur ab enim perspiciatis quae!`,
-  },
-  {
-    id: 2,
-    img: "/images/Gurun.png",
-    title: "Gurun",
-    price: 800000,
-    description: `Lorem, ipsum dolor sit amet consectetur adipisicing elit.`,
-  },
-];
+import { getProducts } from "../services/products.service";
 
 const ProductPage = () => {
   const [cart, setCart] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
-  
+  const [products, setProducts] = useState([]);
+
   // Penggunaan componentDidMount menggunakan stateless component
   useEffect(() => {
     setCart(JSON.parse(localStorage.getItem("cart")) || []);
-  }, [])
+  }, []);
 
   // Penggunaan componentDidUpdate menggunakan stateless component
   useEffect(() => {
-    if(cart.length > 0) {
+    if (products.length > 0 && cart.length > 0) {
       const sum = cart.reduce((acc, item) => {
         const product = products.find((product) => product.id === item.id);
         return acc + product.price * item.qty;
       }, 0);
-  
+
       setTotalPrice(sum);
       localStorage.setItem("cart", JSON.stringify(cart));
     }
-  }, [cart])
+  }, [cart, products]);
 
   // Penggunaan useRef untuk menghilangkan total price dari useEffect jika tidak ada barang di cart
   const totalPriceRef = useRef(null);
 
   useEffect(() => {
-    if(cart.length > 0) {
-      totalPriceRef.current.style.display = 'table-row';
+    if (cart.length > 0) {
+      totalPriceRef.current.style.display = "table-row";
     } else {
-      totalPriceRef.current.style.display = 'none';
+      totalPriceRef.current.style.display = "none";
     }
   });
+
+  // Pengambilan data menggunakan api
+  useEffect(() => {
+    getProducts((data) => {
+      setProducts(data);
+    });
+  }, []);
 
   const email = localStorage.getItem("email");
 
@@ -86,68 +78,73 @@ const ProductPage = () => {
         </Button>
       </div>
       <div className="flex justify-center mt-5">
-        <div
-          className="pl-5 w-4/6 flex flex-wrap gap-x-2"
-        >
-          {products.map((product) => (
-            <ProductCard key={product.id}>
-              <ProductCard.Header img={product.img} />
-              <ProductCard.Body title={product.title}>
-                {product.description}
-              </ProductCard.Body>
-              <ProductCard.Footer
-                price={product.price}
-                onClick={handleAddToCart(product.id)}
-              />
-            </ProductCard>
-          ))}
+        <div className="pl-5 w-4/6 flex flex-wrap gap-x-2">
+          {products.length > 0 &&
+            products.map((product) => (
+              <ProductCard key={product.id}>
+                <ProductCard.Header img={product.image} />
+                <ProductCard.Body title={product.title}>
+                  {product.description}
+                </ProductCard.Body>
+                <ProductCard.Footer
+                  price={product.price}
+                  onClick={handleAddToCart(product.id)}
+                />
+              </ProductCard>
+            ))}
         </div>
-          <div className="w-2/6">
-            <h1 className="text-black font-bold text-2xl">Keranjang</h1>
-            <table>
-              <thead>
-                <tr>
-                  <th>Nama Produk</th>
-                  <th>Harga</th>
-                  <th>Jumlah</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cart.map((item) => {
+        <div className="w-2/6">
+          <h1 className="text-black font-bold text-2xl">Keranjang</h1>
+          <table>
+            <thead>
+              <tr>
+                <th>Nama Produk</th>
+                <th>Harga</th>
+                <th>Jumlah</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.length > 0 &&
+                cart.map((item) => {
                   const product = products.find(
                     (product) => product.id === item.id
                   );
                   return (
                     <tr className="text-center" key={item.id}>
-                      <td>{product.title}</td>
+                      <td>{product.title.substring(0, 15)}...</td>
                       <td>
                         {product.price.toLocaleString("id-ID", {
                           style: "currency",
-                          currency: "IDR",
+                          currency: "USD",
                         })}
                       </td>
                       <td>{item.qty}</td>
                       <td>
                         {(item.qty * product.price).toLocaleString("id-ID", {
                           style: "currency",
-                          currency: "IDR",
+                          currency: "USD",
                         })}
                       </td>
                     </tr>
                   );
                 })}
-                <tr ref={totalPriceRef}>
-                  <td colSpan={3}>
-                    <b>Total Price</b>
-                  </td>
-                  <td>
-                    <b>{totalPrice.toLocaleString('id-ID', {style: 'currency', currency: 'IDR'})}</b>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+              <tr ref={totalPriceRef}>
+                <td colSpan={3}>
+                  <b>Total Price</b>
+                </td>
+                <td>
+                  <b>
+                    {totalPrice.toLocaleString("id-ID", {
+                      style: "currency",
+                      currency: "USD",
+                    })}
+                  </b>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </>
   );
