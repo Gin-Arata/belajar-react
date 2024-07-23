@@ -1,40 +1,65 @@
 import InputElements from "../Elements/Input";
 import Button from "../Elements/Button";
 import { useEffect, useRef } from "react";
+import { login } from "../../services/auth.service";
+import { useState } from "react";
 
 const FormLogin = () => {
-    const handleLogin = (event) => {
-        event.preventDefault();
-        localStorage.setItem('email', event.target.email.value);
-        localStorage.setItem('password', event.target.password.value);
+  // Penggunaan useState untuk menyimpan response dari API
+  const [loginFailed, setLoginFailed] = useState("");
+
+  // Penggunaan API Post untuk melakukan login
+  const handleLogin = (event) => {
+    event.preventDefault();
+    // localStorage.setItem('email', event.target.email.value);
+    // localStorage.setItem('password', event.target.password.value);
+    // window.location.href = '/products';
+    const data = {
+      username: event.target.username.value,
+      password: event.target.password.value,
+    };
+
+    login(data, (status, res) => {
+      if (status) {
+        localStorage.setItem("token", res.token);
         window.location.href = '/products';
-    }
-
-    // Penggunaan useRef untuk melakukan focus terhadap input
-    const emailRef = useRef();
-
-    useEffect(() => {
-        emailRef.current.focus();
+      } else {
+        setLoginFailed(res.response.data);
+      }
     });
+  };
 
-    return (
-        <form onSubmit={handleLogin}>
-            <InputElements
-                name="email"
-                type="email"
-                placeholder="example@mail.com"
-                label="Email"
-                ref={emailRef}
-            />
-            <InputElements
-                name="password"
-                type="password"
-                placeholder="*********"
-                label="Password"
-            />
-          <Button classname="w-full text-center bg-blue-500 hover:bg-blue-700" type="submit">Login</Button>
-        </form>
-    );
-}
+  // Penggunaan useRef untuk melakukan focus terhadap input
+  const usernameRef = useRef();
+
+  useEffect(() => {
+    usernameRef.current.focus();
+  });
+
+  return (
+    <form onSubmit={handleLogin}>
+      {loginFailed && <p className="text-center text-red-500">{loginFailed}</p>}
+      <InputElements
+        name="username"
+        type="text"
+        placeholder="John Doe"
+        label="Username"
+        ref={usernameRef}
+      />
+      <InputElements
+        name="password"
+        type="password"
+        placeholder="*********"
+        label="Password"
+      />
+      <Button
+        classname="w-full text-center bg-blue-500 hover:bg-blue-700"
+        type="submit"
+      >
+        Login
+      </Button>
+    </form>
+  );
+};
 
 export default FormLogin;

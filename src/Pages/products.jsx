@@ -2,11 +2,25 @@ import { useEffect, useRef, useState } from "react";
 import ProductCard from "../components/Fragments/ProductCard";
 import Button from "../components/Elements/Button";
 import { getProducts } from "../services/products.service";
+import { getUsername } from "../services/auth.service";
 
 const ProductPage = () => {
   const [cart, setCart] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [products, setProducts] = useState([]);
+  const [username, setUsername] = useState("");
+
+  // Penggunaan useEffect untuk mengambil data dari token localStorage dan melakukan decode token
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    // Handle jika tidak ada token
+    if(token) {
+      setUsername(getUsername(token));
+    } else {
+      window.location.href = "/login";
+    }
+  }, []);
 
   // Penggunaan componentDidMount menggunakan stateless component
   useEffect(() => {
@@ -44,11 +58,8 @@ const ProductPage = () => {
     });
   }, []);
 
-  const email = localStorage.getItem("email");
-
   const handleLogout = () => {
-    localStorage.removeItem("email");
-    localStorage.removeItem("password");
+    localStorage.removeItem("token");
     window.location.href = "/login";
   };
 
@@ -69,7 +80,7 @@ const ProductPage = () => {
   return (
     <>
       <div className="bg-blue-500 h-16 flex justify-end items-center px-10 text-white">
-        {email}
+        {username && <p className="mr-5">Welcome, {username}</p>}
         <Button
           classname="bg-slate-950 hover:bg-slate-700 ml-5"
           onClick={handleLogout}
