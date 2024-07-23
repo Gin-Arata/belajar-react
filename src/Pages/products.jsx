@@ -2,25 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import ProductCard from "../components/Fragments/ProductCard";
 import Button from "../components/Elements/Button";
 import { getProducts } from "../services/products.service";
-import { getUsername } from "../services/auth.service";
+import useLogin from "../hooks/useLogin";
 
 const ProductPage = () => {
   const [cart, setCart] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [products, setProducts] = useState([]);
-  const [username, setUsername] = useState("");
-
-  // Penggunaan useEffect untuk mengambil data dari token localStorage dan melakukan decode token
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    // Handle jika tidak ada token
-    if(token) {
-      setUsername(getUsername(token));
-    } else {
-      window.location.href = "/login";
-    }
-  }, []);
+  const username = useLogin();
 
   // Penggunaan componentDidMount menggunakan stateless component
   useEffect(() => {
